@@ -1,0 +1,61 @@
+//NinjasTools - build.gradle
+//@author ViolentNinjaD
+//Licensed under LGPL v3
+apply plugin: 'java'
+apply plugin: 'idea'
+apply plugin: 'application'
+apply plugin: 'maven'
+
+ext.configFile = file "build.properties"
+
+configFile.withReader {
+    def prop = new Properties()
+    prop.load(it)
+    project.ext.config = new ConfigSlurper().parse prop
+}
+
+group = 'ninja.ninjastools'
+version = config.app_version
+mainClassName = 'ninja.ninjastools.NinjasTools'
+archivesBaseName = 'NinjasTools'
+
+configurations {
+    deployerJars
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    deployerJars "org.apache.maven.wagon:wagon-ssh:2.2"
+}
+
+task writeNewPom << {
+    pom {
+        project {
+            inceptionYear '2014'
+            licenses {
+                license {
+                    name 'GNU LGPL version 3'
+                    url 'http://www.gnu.org/licenses/lgpl.html'
+                    distribution 'repo'
+                }
+            }
+        }
+    }.writeTo("$buildDir/pom.xml")
+}
+
+jar {
+    manifest {
+        attributes("Main-Class": "ninja.ninjastools.NinjasTools")
+    }
+}
+
+uploadArchives {
+    repositories {
+        mavenDeployer {
+            repository url: 'file://C:/Development/MavenRepository/maven'
+        }
+    }
+}
